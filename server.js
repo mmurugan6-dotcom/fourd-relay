@@ -1,31 +1,33 @@
 import express from "express";
 import cors from "cors";
-import fetch from "node-fetch";
-import * as cheerio from "cheerio";
 
 const app = express();
 app.use(cors());
 
-const SOURCE_URL = "https://example.com/4d"; // later replace with real URL
-
-app.get("/api/4d/latest", async (req, res) => {
-  try {
-    const response = await fetch(SOURCE_URL);
-    const html = await response.text();
-    const $ = cheerio.load(html);
-
-    const first = $("#firstPrize").text().trim() || "1234";
-    const second = $("#secondPrize").text().trim() || "5678";
-    const third = $("#thirdPrize").text().trim() || "9012";
-
-    res.json({
-      prizes: { first, second, third },
-      fetchedAt: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+app.get("/", (_req, res) => {
+  res.send("✅ fourd-relay up. Try /api/mock or /api/4d/latest");
 });
 
-const PORT = 8080;
-app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+app.get("/healthz", (_req, res) => {
+  res.json({ ok: true, ts: new Date().toISOString() });
+});
+
+// Mock endpoint (works even without SOURCE_URL or selectors)
+app.get("/api/mock", (_req, res) => {
+  res.json({
+    drawDate: "2025-11-12",
+    drawNo: "5678",
+    prizes: {
+      first: "1234",
+      second: "5678",
+      third: "9012",
+      starters: Array.from({ length: 10 }, (_, i) => String(1000 + i)),
+      consolations: Array.from({ length: 10 }, (_, i) => String(2000 + i)),
+    },
+    source: "mock",
+    fetchedAt: new Date().toISOString(),
+  });
+});
+
+const PORT = process.env.PORT || 8080;        // <-- IMPORTANT on Render
+app.listen(PORT, () => console.log("Relay listening on " + PORT));
