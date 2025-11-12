@@ -1,3 +1,9 @@
+app.get("/", (_req, res) => {
+  res.send("✅ fourd-relay up. Try /api/mock or /api/4d/latest");
+});
+app.get("/healthz", (_req, res) => res.json({ ok: true }));
+
+
 {
   "name": "fourd-relay",
   "version": "1.0.0",
